@@ -1,8 +1,7 @@
 # Create a file named app.py
 from flask import Flask, render_template, request, jsonify
-import json
-import os
 from config import DAILY_TASKS, create_default_daily_tasks_object
+from file_utils import get_or_generate_file, write_file
 from time_utils import get_filename_for_today
 
 app = Flask(__name__)
@@ -10,21 +9,8 @@ app = Flask(__name__)
 @app.route('/')
 def hello():
     file_name = get_filename_for_today()
-    file_data = make_or_get_file(file_name)
+    file_data = get_or_generate_file(file_name, create_default_daily_tasks_object)
     return render_template('todo.html', data=file_data)
-
-def make_or_get_file(file_name):
-    # Check if the data file exists
-    if os.path.exists(file_name):
-        # If the file exists, read its content
-        with open(file_name, 'r') as file:
-            return json.load(file)
-    else:
-        default_data = create_default_daily_tasks_object()
-        # Create the file and write default data
-        with open(file_name, 'w') as file:
-            json.dump(default_data, file, indent=4)
-        return default_data
 
 @app.route('/data', methods=['POST'])
 def data():
@@ -65,13 +51,12 @@ def data():
         file_name = get_filename_for_today()
 
         # Read the existing data from the JSON file
-        existing_data = make_or_get_file(file_name)
+        existing_data = get_or_generate_file(file_name)
 
         existing_data[field_name] = new_value
 
         # Save the updated data back to the JSON file
-        with open(file_name, 'w') as file:
-            json.dump(existing_data, file, indent=4)
+        write_file(file_name, existing_data)
 
         return jsonify({"message": "Field updated successfully."}), 200
 
