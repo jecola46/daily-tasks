@@ -1,0 +1,3 @@
+__pycache__/
+todo_list*.json
+venv/

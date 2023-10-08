@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Link to Bootstrap CSS from the 'static' directory -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+
+    <!-- Link to Bootstrap JavaScript from the 'static' directory -->
+    <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
+    <title>Task List</title>
+    <style>
+        /* Custom styles for checkboxes */
+        body {
+            background-color: #566361;
+        }
+
+        .form-check {
+            width: 100%;
+            height: 10em;
+            padding-bottom: 1em;
+        }
+
+        .form-check-input {
+            aspect-ratio: 1/1;
+            height: 100%;
+            width: auto;
+        }
+
+        .form-check-label {
+            font-size: 2em;
+            height: 100%;
+            text-align: center;
+            justify-content: center;
+            align-items: center;
+            display: flex;
+        }
+
+        /* Apply strikethrough effect to label when the checkbox is checked */
+        .custom-checkbox input[type="checkbox"]:checked + label {
+            text-decoration: line-through;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center">Task List</h1>
+        <div class="col-md-6 offset-md-3"> <!-- Center the checkboxes on medium screens -->
+            <form>
+                <div class="form-group">
+                    <label for="password" style="font-size: 2em;">Super Secret Password</label>
+                    <textarea class="form-control" id="password" rows="3" style="margin-bottom: 5em;"></textarea>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" style="margin-left: 0;" type="checkbox" value="" id="hasWorkedout" {% if data.hasWorkedout %}checked{% endif %}>
+                  <label class="form-check-label" for="hasWorkedout">
+                    Workout
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" style="margin-left: 0;" type="checkbox" value="" id="ateBreakfast" {% if data.ateBreakfast %}checked{% endif %}>
+                  <label class="form-check-label" for="ateBreakfast">
+                    Brekkie
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" style="margin-left: 0;" type="checkbox" value="" id="ateLunch" {% if data.ateLunch %}checked{% endif %}>
+                  <label class="form-check-label" for="ateLunch">
+                    Lunch
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" style="margin-left: 0;" type="checkbox" value="" id="ateDinner" {% if data.ateDinner %}checked{% endif %}>
+                  <label class="form-check-label" for="ateDinner">
+                    Dinner
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" style="margin-left: 0;" type="checkbox" value="" id="hasHomework" {% if data.hasHomework %}checked{% endif %} onchange="toggleHomeworkDone()">
+                  <label class="form-check-label" for="hasHomework">
+                    Do you have HW due?
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" style="margin-left: 3em;" type="checkbox" value="" id="homeworkComplete" {% if data.homeworkComplete %}checked{% endif %} {% if not data.hasHomework %}disabled{% endif %}>
+                  <label class="form-check-label" for="homeworkComplete">
+                    HW Complete
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" style="margin-left: 0;" type="checkbox" value="" id="makeupStudyComplete" {% if data.makeupStudyComplete %}checked{% endif %}>
+                  <label class="form-check-label" for="makeupStudyComplete">
+                    Makeup Study
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" style="margin-left: 0;" type="checkbox" value="" id="isRoomClean" {% if data.isRoomClean %}checked{% endif %}>
+                  <label class="form-check-label" for="isRoomClean">
+                    Room clean
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" style="margin-left: 0;" type="checkbox" value="" id="hasDrawn" {% if data.hasDrawn %}checked{% endif %}>
+                  <label class="form-check-label" for="hasDrawn">
+                    Drawn Today?
+                  </label>
+                </div>
+                <div class="form-group">
+                    <label for="miscSkills" style="font-size: 2em;">What misc skills have you worked on today?</label>
+                    <textarea class="form-control" id="miscSkills" rows="3" style="margin-bottom: 20em;">{{ data.miscSkills }}</textarea>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function toggleHomeworkDone() {
+            var homeworkCheckbox = document.getElementById("hasHomework");
+            var homeworkDoneCheckbox = document.getElementById("homeworkComplete");
+
+            homeworkDoneCheckbox.disabled = !homeworkCheckbox.checked;
+        }
+
+        // Add event listeners to the input elements
+        document.getElementById("hasWorkedout").addEventListener("change", reportChange);
+        document.getElementById("ateBreakfast").addEventListener("change", reportChange);
+        document.getElementById("ateLunch").addEventListener("change", reportChange);
+        document.getElementById("ateDinner").addEventListener("change", reportChange);
+        document.getElementById("hasHomework").addEventListener("change", reportChange);
+        document.getElementById("homeworkComplete").addEventListener("change", reportChange);
+        document.getElementById("makeupStudyComplete").addEventListener("change", reportChange);
+        document.getElementById("isRoomClean").addEventListener("change", reportChange);
+        document.getElementById("hasDrawn").addEventListener("change", reportChange);
+        document.getElementById("miscSkills").addEventListener("change", reportChange);
+
+
+        // Function to send updated data to the server
+        function reportChange(event) {
+            const elementId = event.target.id;
+            let newValue = event.target.checked;
+            if (elementId === "miscSkills") {
+                newValue = event.target.value
+            }
+
+            const password = document.getElementById("password").value
+
+            // Create a JSON object with the updated data
+            const data = {
+                elementId: elementId,
+                newValue: newValue,
+                password: password
+            };
+
+            // Make an AJAX request to the server
+            fetch('/data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    console.log(event)
+                    if (response.status === 403) {
+                        if (elementId === "miscSkills") {
+                            event.target.value = ""
+                        } else {
+                            event.target.checked = !event.target.checked
+                            toggleHomeworkDone()
+                        }
+                        console.log(event.target.checked)
+                        alert("Please enter password")
+                    }
+                    throw new Error('Network response was not ok');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
