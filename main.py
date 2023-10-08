@@ -2,45 +2,16 @@
 from flask import Flask, render_template, request, jsonify
 import json
 import os
-from datetime import datetime
-import pytz
 from config import DAILY_TASKS, create_default_daily_tasks_object
+from time_utils import get_filename_for_today
 
 app = Flask(__name__)
 
-pacific_timezone = pytz.timezone('US/Pacific')
-
 @app.route('/')
 def hello():
-    file_name = get_todo_filename()
+    file_name = get_filename_for_today()
     file_data = make_or_get_file(file_name)
     return render_template('todo.html', data=file_data)
-
-def get_todo_filename():
-    current_date = get_current_date()
-
-    # Check if it's time to create a new file
-    if after_date_cutoff():
-        return f"todo_list_{current_date}.json"
-    else:
-        # Use the previous day's date for the filename
-        previous_day = current_datetime - timedelta(days=1)
-        return f"todo_list_{previous_day.strftime('%Y-%m-%d')}.json"
-
-def get_current_date():
-    # Get the current date in the desired time zone (PST)
-    current_datetime = datetime.now(pacific_timezone)
-    return current_datetime.strftime("%Y-%m-%d")
-
-def after_date_cutoff():
-    # Get the current time in the desired time zone (PST)
-    current_datetime = datetime.now(pacific_timezone)
-
-    # Define the switch-over time (2 AM PST)
-    switch_over_time = current_datetime.replace(hour=2, minute=0, second=0, microsecond=0)
-
-    # Check if the current time is after the switch-over time
-    return current_datetime >= switch_over_time
 
 def make_or_get_file(file_name):
     # Check if the data file exists
@@ -91,7 +62,7 @@ def data():
             # Handle the case where conversion is not possible
             return jsonify({"error": f'Invalid value for the field: {field_name}'}), 400
 
-        file_name = get_todo_filename()
+        file_name = get_filename_for_today()
 
         # Read the existing data from the JSON file
         existing_data = make_or_get_file(file_name)
