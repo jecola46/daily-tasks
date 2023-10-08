@@ -51,7 +51,7 @@ def data():
         file_name = get_filename_for_today()
 
         # Read the existing data from the JSON file
-        existing_data = get_or_generate_file(file_name)
+        existing_data = get_or_generate_file(file_name, create_default_daily_tasks_object)
 
         existing_data[field_name] = new_value
 
